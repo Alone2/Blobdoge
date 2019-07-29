@@ -8,13 +8,19 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ch.blobber.wallet.DogecoinWallet;
+
 @WebServlet("/sendAddress")
 public class SendAddressServlet extends HttpServlet {
 
 	public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
-		String test = req.getParameter("test");
+		String code = req.getParameter("code");
+		String address = req.getParameter("address");
 		
 		PrintWriter out = res.getWriter();
-		out.print(test);
+		
+		DogecoinWallet dw = new DogecoinWallet();
+		out.print(dw.claimURL(code, address));
+		
 	}
 }

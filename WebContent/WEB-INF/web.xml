@@ -4,12 +4,18 @@
 	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
 	id="WebApp_ID" version="4.0">
 	<display-name>Blobdoge</display-name>
-	
+
+	<servlet>
+		<servlet-name>Startup</servlet-name>
+		<servlet-class>ch.blobber.servlets.Startup</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
 	<servlet>
 		<servlet-name>auth</servlet-name>
 		<servlet-class>ch.blobber.servlets.AuthServlet</servlet-class>
 	</servlet>
-	
+
 	<servlet>
 		<servlet-name>infoA</servlet-name>
 		<servlet-class>ch.blobber.servlets.InfoAddressServlet</servlet-class>
@@ -24,10 +30,10 @@
 		<servlet-name>sendA</servlet-name>
 		<servlet-class>ch.blobber.servlets.SendAdressServlet</servlet-class>
 	</servlet>
-	
+
 	<servlet>
 		<servlet-name>sendU</servlet-name>
 		<servlet-class>ch.blobber.servlets.SendURLServlet</servlet-class>
 	</servlet>
-	
+
 </web-app>
