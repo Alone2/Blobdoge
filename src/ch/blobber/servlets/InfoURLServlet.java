@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
+
 import ch.blobber.database.WalletDatabase;
 
 @WebServlet("/infoURL")
@@ -16,7 +18,12 @@ public class InfoURLServlet extends HttpServlet {
 
 	public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		String url = req.getParameter("code");
+		
 		PrintWriter out = res.getWriter();
+		if (url == null) {
+			out.print(ServletErrors.PARAMETER_ERROR.toJson());
+			return;
+		}
 		
 		WalletDatabase w = new WalletDatabase();
 		float balance = 0;
@@ -24,14 +31,17 @@ public class InfoURLServlet extends HttpServlet {
 			balance = w.getURLBalance(url);				
 		} catch (SQLException e) {
 			e.printStackTrace();
-			out.print("{\"error\":\"internal_error\"}");
+			out.print(ServletErrors.INTERNAL_ERROR.toJson());
 			return;
 		}
 		if (balance <= 0) {
-			out.print("{\"error\":\"invalid_code\"}");
+			out.print(ServletErrors.INVALID_CODE.toJson());
 			return;
 		}
-		out.print("{\"error\":\"none\",\"balance\":" + String.valueOf(balance) +"}");
+		JSONObject j = new JSONObject();
+		j.put("error", "none");
+		j.put("balance", balance);
+		out.print(j.toString());
 		
 	}
 }

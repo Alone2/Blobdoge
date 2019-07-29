@@ -9,8 +9,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
+
 import ch.blobber.database.AuthDatabase;
-import ch.blobber.wallet.DogecoinWallet;
+import ch.blobber.database.WalletDatabase;
+import ch.blobber.wallet.DogecoinConnection;
 
 @WebServlet("/sendURL")
 public class SendURLServlet extends HttpServlet {
@@ -20,6 +23,10 @@ public class SendURLServlet extends HttpServlet {
 		String amount = req.getParameter("amount");
 		
 		PrintWriter out = res.getWriter();
+		if (token == null || amount == null) {
+			out.print(ServletErrors.PARAMETER_ERROR.toJson());
+			return;
+		}
 		
 		AuthDatabase db = new AuthDatabase();
 		int user;
@@ -27,16 +34,42 @@ public class SendURLServlet extends HttpServlet {
 			user = db.getUserId(token);
 			db.close();
 			if (user == 0) {
-				 out.print("{\"error\":\"wrong_key\"}");
+				 out.print(ServletErrors.WRONG_KEY.toJson());
 				 return;
 			}
 		} catch (SQLException e) {
-			 out.print("{\"error\":\"internal_error\"}");
+			 out.print(ServletErrors.INTERNAL_ERROR.toJson());
 			 return;
 		}
 		
-		DogecoinWallet dw = new DogecoinWallet();
-		out.print(dw.sendToURL(user, Float.valueOf(amount)));
+		out.print(this.sendToURL(user, Float.valueOf(amount)));
 		
+	}
+	
+	private String sendToURL(int account, float amount) {
+		DogecoinConnection c = new DogecoinConnection();
+		String url;
+		try {
+			if (!(c.getBalance(account) >= amount))
+				return ServletErrors.WRONG_KEY.toJson();
+			c.move(account, 0, amount);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ServletErrors.INTERNAL_ERROR.toJson();
+		}
+		WalletDatabase db = new WalletDatabase();
+		try {
+			url = db.createURL(account, amount);
+			db.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return ServletErrors.INTERNAL_ERROR.toJson();
+		}
+		
+		JSONObject j = new JSONObject();
+		j.put("error", "none");
+		j.put("code", url);
+		j.put("balance", amount);
+		return j.toString();
 	}
 }

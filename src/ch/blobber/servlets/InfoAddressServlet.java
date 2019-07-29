@@ -9,15 +9,22 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
+
 import ch.blobber.database.AuthDatabase;
-import ch.blobber.wallet.DogecoinWallet;
+import ch.blobber.wallet.DogecoinConnection;
 
 @WebServlet("/infoAddress")
 public class InfoAddressServlet extends HttpServlet {
 
 	public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		String token = req.getParameter("token");
+		
 		PrintWriter out = res.getWriter();
+		if (token == null) {
+			out.print(ServletErrors.PARAMETER_ERROR.toJson());
+			return;
+		}
 		
 		AuthDatabase db = new AuthDatabase();
 		int user;
@@ -25,15 +32,32 @@ public class InfoAddressServlet extends HttpServlet {
 			user = db.getUserId(token);
 			db.close();
 			if (user == 0) {
-				 out.print("{\"error\":\"wrong_key\"}");
+				 out.print(ServletErrors.WRONG_KEY.toJson());
 				 return;
 			}
 		} catch (SQLException e) {
-			 out.print("{\"error\":\"internal_error\"}");
+			 out.print(ServletErrors.INTERNAL_ERROR.toJson());
 			 return;
 		}
 		
-		DogecoinWallet d = new DogecoinWallet();		
-		out.print(d.getInfo(user));
+		out.print(this.getInfo(user));
+	}
+	
+	private String getInfo(int account) {
+		DogecoinConnection c = new DogecoinConnection();
+		String address;
+		float balance;
+		try {
+			address = c.getCurrentAddress(account);
+			balance = c.getBalance(account);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ServletErrors.INTERNAL_ERROR.toJson();
+		}
+		JSONObject j = new JSONObject();
+		j.put("error", "none");
+		j.put("address", address);
+		j.put("balance", balance);
+		return j.toString();
 	}
 }

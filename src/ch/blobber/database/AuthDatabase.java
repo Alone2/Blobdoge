@@ -15,7 +15,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 public class AuthDatabase extends Database {
-	
+
 	public int getUserId(String token) throws SQLException {
 		// search userId with specific Token
 		String request = "SELECT id " + "FROM authTable WHERE " + "uniqueId='" + token + "';";
@@ -30,32 +30,22 @@ public class AuthDatabase extends Database {
 
 	}
 
-	public String logIn(String username, String password) {
+	public String logIn(String username, String password) throws Exception {
 		// Get salt and password from Database
 		String request = "SELECT salt,password " + "FROM authTable WHERE " + "username='" + username + "';";
 		byte[] storedPassword = new byte[256];
 		byte[] salt = new byte[16];
-		try {
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(request);
-			while (rs.next()) {
-				storedPassword = rs.getBytes("password");
-				salt = rs.getBytes("salt");
-			}
-			rs.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "{\"error\":\"internal_error\"}";
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery(request);
+		while (rs.next()) {
+			storedPassword = rs.getBytes("password");
+			salt = rs.getBytes("salt");
 		}
+		rs.close();
 
 		// Encrypt Password
 		byte[] encryptedPassword;
-		try {
-			encryptedPassword = encryptPassword(password, salt);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "{\"error\":\"internal_error\"}";
-		}
+		encryptedPassword = encryptPassword(password, salt);
 
 		// Compare stored and encrypted (typed) password
 		if (!Arrays.equals(encryptedPassword, storedPassword)) {
@@ -66,22 +56,17 @@ public class AuthDatabase extends Database {
 		String token = generateToken(40);
 
 		String sql = "UPDATE authTable SET " + "uniqueId = ? " + "WHERE username='" + username + "';";
-		PreparedStatement st;
-		try {
-			st = con.prepareStatement(sql);
-			st.setString(1, token);
-			st.execute();
-			st.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return "{\"error\":\"internal_error\"}";
-		}
+		PreparedStatement st2;
+		st2 = con.prepareStatement(sql);
+		st2.setString(1, token);
+		st2.execute();
+		st2.close();
 
 		return "{\"error\":\"none\",\"token\":\"" + token + "\"}";
 
 	}
 
-	public String register(String username, String password) {
+	public String register(String username, String password) throws Exception {
 		System.out.println(username + " registers");
 		// Test if username exists
 		int i = this.getInt("SELECT COUNT(username)\n" + "FROM authTable " + "WHERE username='" + username + "';");
@@ -92,27 +77,17 @@ public class AuthDatabase extends Database {
 		// encrypt Password
 		byte[] salt = getSalt();
 		byte[] encryptedPassword;
-		try {
-			encryptedPassword = encryptPassword(password, salt);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "{\"error\":\"internal_error\"}";
-		}
+		encryptedPassword = encryptPassword(password, salt);
 
 		// Upload to Database
 		String sql = "INSERT INTO authTable (" + "username, password, salt" + ") VALUES (?,?,?);";
 		PreparedStatement st;
-		try {
-			st = con.prepareStatement(sql);
-			st.setString(1, username);
-			st.setBytes(2, encryptedPassword);
-			st.setBytes(3, salt);
-			st.execute();
-			st.close();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		st = con.prepareStatement(sql);
+		st.setString(1, username);
+		st.setBytes(2, encryptedPassword);
+		st.setBytes(3, salt);
+		st.execute();
+		st.close();
 
 		return "{\"error\":\"none\"}";
 	}
@@ -150,5 +125,5 @@ public class AuthDatabase extends Database {
 			return generateToken(size);
 		return output;
 	}
-	
+
 }

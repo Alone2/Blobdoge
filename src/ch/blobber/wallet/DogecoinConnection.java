@@ -13,15 +13,10 @@ import java.io.*;
 
 public class DogecoinConnection {
 	String output;
-	String web_url;
-	String uname;
-	String pass;
-
-	public DogecoinConnection(String web_url, String uname, String pass) {
-		this.web_url = web_url;
-		this.uname = uname;
-		this.pass = pass;
-	}
+	final String web_url = "http://127.0.0.1:8332/";
+	final String uname =  "alain";
+	final String pass = "verysecure";
+	
 
 	private String get(String method, String args) throws Exception {
 		URL url = new URL(web_url);
@@ -32,7 +27,7 @@ public class DogecoinConnection {
 		URLConnection con = url.openConnection();
 		HttpURLConnection http = (HttpURLConnection) con;
 
-		http.setRequestMethod("POST"); // PUT is another valid option
+		http.setRequestMethod("POST");
 		http.setRequestProperty("Authorization", "Basic " + encoding);
 		http.setDoOutput(true);
 

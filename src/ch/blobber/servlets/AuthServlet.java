@@ -20,18 +20,30 @@ public class AuthServlet extends HttpServlet {
 
 		PrintWriter out = res.getWriter();
 		if (register == null || uname == null || passwd == null) {
-			out.print("{\"error\":\"parameter_error\"}");
+			out.print(ServletErrors.PARAMETER_ERROR.toJson());
 			return;
 		}
 		
 		if (register.contains("True") || register.contains("true")) {
 			AuthDatabase a = new AuthDatabase();
-			out.print(a.register(uname, passwd));
+			try {
+				out.print(a.register(uname, passwd));
+			} catch (Exception e) {
+				e.printStackTrace();
+				out.print(ServletErrors.INTERNAL_ERROR.toJson());
+				return;
+			}
 			a.close();
 			return;
 		}
 		AuthDatabase a = new AuthDatabase();
-		out.print(a.logIn(uname, passwd));		
+		try {
+			out.print(a.logIn(uname, passwd));
+		} catch (Exception e) {
+			e.printStackTrace();
+			out.print(ServletErrors.INTERNAL_ERROR.toJson());
+			return;
+		}		
 		a.close();
 	}
 	

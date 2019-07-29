@@ -11,7 +11,7 @@ public class Startup extends HttpServlet {
 	public void init() throws ServletException {
 		// Thread t = new Thread();
 		// Test if Server ok
-		DogecoinConnection c = new DogecoinConnection("http://127.0.0.1:8332/", "alain", "verysecure");
+		DogecoinConnection c = new DogecoinConnection();
 
 		boolean isReady;
 		boolean error;
