@@ -18,10 +18,11 @@ public class AuthDatabase extends Database {
 
 	public int getUserId(String token) throws SQLException {
 		// search userId with specific Token
-		String request = "SELECT id " + "FROM authTable WHERE " + "uniqueId='" + token + "';";
+		String request = "SELECT id FROM authTable WHERE uniqueId= ? ;";
 		int id = 0;
-		Statement st = con.createStatement();
-		ResultSet rs = st.executeQuery(request);
+		PreparedStatement st = con.prepareStatement(request);
+		st.setString(1, token);
+		ResultSet rs = st.executeQuery();
 		while (rs.next()) {
 			id = rs.getInt("id");
 		}
@@ -32,11 +33,12 @@ public class AuthDatabase extends Database {
 
 	public String logIn(String username, String password) throws Exception {
 		// Get salt and password from Database
-		String request = "SELECT salt,password " + "FROM authTable WHERE " + "username='" + username + "';";
+		String request = "SELECT salt,password FROM authTable WHERE username=?;";
 		byte[] storedPassword = new byte[256];
 		byte[] salt = new byte[16];
-		Statement st = con.createStatement();
-		ResultSet rs = st.executeQuery(request);
+		PreparedStatement st = con.prepareStatement(request);
+		st.setString(1, username);
+		ResultSet rs = st.executeQuery();
 		while (rs.next()) {
 			storedPassword = rs.getBytes("password");
 			salt = rs.getBytes("salt");
@@ -55,10 +57,11 @@ public class AuthDatabase extends Database {
 		// Generate token for User
 		String token = generateToken(40);
 
-		String sql = "UPDATE authTable SET " + "uniqueId = ? " + "WHERE username='" + username + "';";
+		String sql = "UPDATE authTable SET uniqueId = ? WHERE username= ? ;";
 		PreparedStatement st2;
 		st2 = con.prepareStatement(sql);
 		st2.setString(1, token);
+		st2.setString(2, username);
 		st2.execute();
 		st2.close();
 
@@ -68,9 +71,8 @@ public class AuthDatabase extends Database {
 
 	public String register(String username, String password) throws Exception {
 		System.out.println(username + " registers");
-		// Test if username exists
-		int i = this.getInt("SELECT COUNT(username)\n" + "FROM authTable " + "WHERE username='" + username + "';");
-		if (i > 0) {
+		
+		if (doesUserExist(username)) {
 			return "{\"error\":\"username_taken\"}";
 		}
 
@@ -80,7 +82,7 @@ public class AuthDatabase extends Database {
 		encryptedPassword = encryptPassword(password, salt);
 
 		// Upload to Database
-		String sql = "INSERT INTO authTable (" + "username, password, salt" + ") VALUES (?,?,?);";
+		String sql = "INSERT INTO authTable (username, password, salt) VALUES (?,?,?);";
 		PreparedStatement st;
 		st = con.prepareStatement(sql);
 		st.setString(1, username);
@@ -90,6 +92,22 @@ public class AuthDatabase extends Database {
 		st.close();
 
 		return "{\"error\":\"none\"}";
+	}
+	
+	private boolean doesUserExist(String username) throws SQLException {
+		String sql = "SELECT COUNT(username) FROM authTable WHERE username = ? ;";
+		PreparedStatement st;
+		st = con.prepareStatement(sql);
+		st.setString(1, url);
+		ResultSet rs = st.executeQuery();
+		int timesHere = 0;
+		while (rs.next()) {
+			timesHere = rs.getInt(1);
+		}
+		rs.close();
+		if (timesHere > 0)
+			return true;
+		return false;
 	}
 
 	private static byte[] getSalt() {
@@ -116,14 +134,25 @@ public class AuthDatabase extends Database {
 		return encoded;
 	}
 
-	private String generateToken(int size) {
+	private String generateToken(int size) throws SQLException {
 		// Generate a token
 		String output = randomLetters(size);
 		// Test if token already exists
-		int i = this.getInt("SELECT COUNT(uniqueId)\n" + "FROM authTable " + "WHERE uniqueId='" + output + "';");
+		String sql ="SELECT COUNT(uniqueId) FROM authTable WHERE uniqueId = ? ;";
+		PreparedStatement st;
+		st = con.prepareStatement(sql);
+		st.setString(1, output);
+		ResultSet rs = st.executeQuery();
+		int i = 0;
+		while (rs.next()) {
+			i = rs.getInt(1);
+		}
+		rs.close();
+		
 		if (i > 0)
 			return generateToken(size);
 		return output;
 	}
+	
 
 }

@@ -31,10 +31,12 @@ public class WalletDatabase extends Database {
 	}
 
 	public float getURLBalance(String url) throws SQLException {
-		String request = "SELECT balance FROM walletTable WHERE url='" + url + "' AND isDone = 0;";
+		String request = "SELECT balance FROM walletTable WHERE url=? AND isDone = 0;";
 		float balance = 0;
-		Statement st = con.createStatement();
-		ResultSet rs = st.executeQuery(request);
+		PreparedStatement st;
+		st = con.prepareStatement(request);
+		st.setString(1, url);
+		ResultSet rs = st.executeQuery();
 		while (rs.next()) {
 			balance = rs.getFloat("balance");
 		}
@@ -54,11 +56,21 @@ public class WalletDatabase extends Database {
 		st.close();
 	}
 
-	private String generateURL(int size) {
+	private String generateURL(int size) throws SQLException {
 		// Generate a token
 		String output = randomLetters(size);
 		// Test if token already exists
-		int i = this.getInt("SELECT COUNT(url)\n" + "FROM walletTable " + "WHERE url='" + output + "';");
+		String sql = "SELECT COUNT(url) FROM walletTable WHERE url= ? ;";
+		PreparedStatement st;
+		st = con.prepareStatement(sql);
+		st.setString(1, output);
+		ResultSet rs = st.executeQuery();
+		int i = 0;
+		while (rs.next()) {
+			i = rs.getInt(1);
+		}
+		rs.close();
+		
 		if (i > 0)
 			return generateURL(size);
 		return output;

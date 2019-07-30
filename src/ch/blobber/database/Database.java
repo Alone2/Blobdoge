@@ -51,6 +51,7 @@ public class Database {
 		return output;
 	}
 	
+	// ONLY USE WHEN NO USER INPUT!!!!! (SQL Injection)
 	protected int getInt(String request) {
 		try {
 			Statement st = con.createStatement();
