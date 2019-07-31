@@ -24,6 +24,11 @@ public class AuthServlet extends HttpServlet {
 			return;
 		}
 		
+		if (uname.equals("") || passwd.equals("")) {
+			out.print(ServletErrors.PASSWORD_OR_USERNAME_EMPTY.toJson());
+			return;
+		}
+		
 		if (register.contains("True") || register.contains("true")) {
 			AuthDatabase a = new AuthDatabase();
 			try {

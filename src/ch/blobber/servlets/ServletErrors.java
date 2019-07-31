@@ -8,7 +8,8 @@ public enum ServletErrors {
 	  INVALID_ADDRESS("{\"error\":\"invalid_address\"}"),
 	  INVALID_CODE("{\"error\":\"invalid_address\"}"),
 	  WRONG_KEY("{\"error\":\"wrong_key\"}"),
-	  NO_ERROR("{\"error\":\"none\"}");
+	  NO_ERROR("{\"error\":\"none\"}"),
+	  PASSWORD_OR_USERNAME_EMPTY("{\"error\":\"password_or_username_empty\"}");
 
 	  private final String json;
 
