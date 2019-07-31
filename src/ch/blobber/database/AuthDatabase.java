@@ -98,7 +98,7 @@ public class AuthDatabase extends Database {
 		String sql = "SELECT COUNT(username) FROM authTable WHERE username = ? ;";
 		PreparedStatement st;
 		st = con.prepareStatement(sql);
-		st.setString(1, url);
+		st.setString(1, username);
 		ResultSet rs = st.executeQuery();
 		int timesHere = 0;
 		while (rs.next()) {

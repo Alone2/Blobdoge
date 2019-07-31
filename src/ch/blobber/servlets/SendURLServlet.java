@@ -50,8 +50,8 @@ public class SendURLServlet extends HttpServlet {
 		DogecoinConnection c = new DogecoinConnection();
 		String url;
 		try {
-			if (!(c.getBalance(account) >= amount))
-				return ServletErrors.WRONG_KEY.toJson();
+			if (!(c.getBalance(account) >= amount && amount > 0))
+				return ServletErrors.NOT_ENOUGH_MONEY.toJson();
 			c.move(account, 0, amount);
 		} catch (Exception e) {
 			e.printStackTrace();
