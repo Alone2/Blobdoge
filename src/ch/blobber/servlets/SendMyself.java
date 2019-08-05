@@ -13,60 +13,57 @@ import ch.blobber.database.AuthDatabase;
 import ch.blobber.database.WalletDatabase;
 import ch.blobber.wallet.DogecoinConnection;
 
-public class SendMyself {
-	@WebServlet("/sendMyself")
-	public class SendAddressServlet extends HttpServlet {
+@WebServlet("/sendMyself")
+public class SendMyself extends HttpServlet  {
 
-		public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
-			String code = req.getParameter("code");
-			String token = req.getParameter("token");
-			
-			PrintWriter out = res.getWriter();
-			
-			if (code == null || token == null) {
-				out.print(ServletErrors.INTERNAL_ERROR.toJson());
+	public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
+		String code = req.getParameter("code");
+		String token = req.getParameter("token");
+
+		PrintWriter out = res.getWriter();
+
+		if (code == null || token == null) {
+			out.print(ServletErrors.INTERNAL_ERROR.toJson());
+			return;
+		}
+
+		int user;
+		AuthDatabase db = new AuthDatabase();
+		try {
+			user = db.getUserId(token);
+			db.close();
+			if (user == 0) {
+				out.print(ServletErrors.WRONG_KEY.toJson());
 				return;
 			}
-			
-			int user;
-			AuthDatabase db = new AuthDatabase();
-			try {
-				user = db.getUserId(token);
-				db.close();
-				if (user == 0) {
-					 out.print(ServletErrors.WRONG_KEY.toJson());
-					 return;
-				}
-			} catch (SQLException e) {
-				 out.print(ServletErrors.INTERNAL_ERROR.toJson());
-				 return;
-			}
-			
-			out.print(claimURL(code, user));
-					
+		} catch (SQLException e) {
+			out.print(ServletErrors.INTERNAL_ERROR.toJson());
+			return;
 		}
 
-		
-		private String claimURL(String urlCode, int user) {
-			// implement Tax (-1 Dogecoin)
-			int current_tax = 1;
-			WalletDatabase db = new WalletDatabase();
-			float balance = 0;
-			try {
-				balance = db.getURLBalance(urlCode)-current_tax;
-				db.lootURL(urlCode, String.valueOf(user));
-			} catch (SQLException e) {
-				e.printStackTrace();
-				return ServletErrors.INTERNAL_ERROR.toJson();
-			}
-			DogecoinConnection c = new DogecoinConnection();
-			try {
-				c.move(0, user, balance);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return ServletErrors.INTERNAL_ERROR.toJson();
-			}
-			return ServletErrors.NO_ERROR.toJson();
-		}
+		out.print(claimURL(code, user));
+
 	}
+
+	private String claimURL(String urlCode, int user) {
+		// no fee because move
+		WalletDatabase db = new WalletDatabase();
+		float balance = 0;
+		try {
+			balance = db.getURLBalance(urlCode);
+			db.lootURL(urlCode, String.valueOf(user));
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return ServletErrors.INTERNAL_ERROR.toJson();
+		}
+		DogecoinConnection c = new DogecoinConnection();
+		try {
+			c.move(0, user, balance);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ServletErrors.INTERNAL_ERROR.toJson();
+		}
+		return ServletErrors.NO_ERROR.toJson();
+	}
+
 }
