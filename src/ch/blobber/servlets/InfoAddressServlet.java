@@ -9,9 +9,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ch.blobber.database.AuthDatabase;
+import ch.blobber.database.WalletDatabase;
 import ch.blobber.wallet.DogecoinConnection;
 
 @WebServlet("/infoAddress")
@@ -54,10 +56,22 @@ public class InfoAddressServlet extends HttpServlet {
 			e.printStackTrace();
 			return ServletErrors.INTERNAL_ERROR.toJson();
 		}
+		
+		// Get all unclaimed Links
+		JSONArray codes = new JSONArray();
+		WalletDatabase dw = new WalletDatabase();
+		try {
+			codes = dw.getCreatedByUser(account);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ServletErrors.INTERNAL_ERROR.toJson();
+		}
+		
 		JSONObject j = new JSONObject();
 		j.put("error", "none");
 		j.put("address", address);
 		j.put("balance", balance);
+		j.put("codes", codes);
 		return j.toString();
 	}
 }

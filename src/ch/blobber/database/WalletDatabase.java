@@ -7,6 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class WalletDatabase extends Database {
 
 	/*
@@ -54,6 +57,22 @@ public class WalletDatabase extends Database {
 		st.setString(4, url);
 		st.execute();
 		st.close();
+	}
+	
+	public JSONArray getCreatedByUser(int userId) throws Exception {
+		String request = "SELECT url FROM walletTable WHERE originUserId=? AND isDone = 0;";
+		JSONArray output = new JSONArray();
+		
+		PreparedStatement st;
+		st = con.prepareStatement(request);
+		st.setInt(1, userId);
+		
+		ResultSet rs = st.executeQuery();
+		while (rs.next()) {
+			output.put(rs.getString("url"));
+		}
+		rs.close();
+		return output;
 	}
 
 	private String generateURL(int size) throws SQLException {
