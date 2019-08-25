@@ -8,17 +8,27 @@ import java.util.Base64;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ch.blobber.database.PropertiesCon;
+
 import java.io.*;
 
 
 public class DogecoinConnection {
 	String output;
-	final String web_url = "http://127.0.0.1:8332/";
-	final String uname =  "alain";
-	final String pass = "verysecure";
+	String web_url;
+	String uname;
+	String pass;
+	
+	public DogecoinConnection() {
+		PropertiesCon prop = new PropertiesCon();
+		web_url = prop.getParameter("dogecoind.url");
+		uname = prop.getParameter("dogecoind.uname");
+		pass = prop.getParameter("dogecoind.passwd");
+	}
 	
 
 	private String get(String method, String args) throws Exception {
+		
 		URL url = new URL(web_url);
 
 		String credentials = uname + ":" + pass;

@@ -9,12 +9,17 @@ import java.sql.Statement;
 import java.util.Random;
 
 public class Database {
-	final String url = "jdbc:mysql://localhost:3306/BlobDoge";
-	final String uname = "blobber";
-	final String passwd = "test123";
+	String url;
+	String uname;
+	String passwd;
 	Connection con;
 	
 	public Database() {
+		PropertiesCon prop = new PropertiesCon();
+		url = prop.getParameter("database.url");
+		uname = prop.getParameter("database.uname");
+		passwd = prop.getParameter("database.passwd");
+		
 		// Initalize connection
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
