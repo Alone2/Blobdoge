@@ -14,7 +14,9 @@ import ch.blobber.wallet.DogecoinConnection;
 
 @WebServlet("/sendAddress")
 public class SendAddressServlet extends HttpServlet {
-
+	
+	private DogecoinConnection c ;
+	
 	public void service(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		String code = req.getParameter("code");
 		String address = req.getParameter("address");
@@ -25,14 +27,22 @@ public class SendAddressServlet extends HttpServlet {
 			return;
 		}
 		
+		this.c = new DogecoinConnection();
+		try {
+			if (!c.validateAddress(address)) {
+				out.print(ServletErrors.INVALID_ADDRESS.toJson());
+				return;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			out.print(ServletErrors.INTERNAL_ERROR.toJson());
+			return;
+		}		
 		out.print(this.claimURL(code, address));		
 	}
 	
 	private String sendToAddress(int account, String address, float amount) {
-		DogecoinConnection c = new DogecoinConnection();
 		try {
-			if (!c.validateAddress(address)) 
-				return ServletErrors.INVALID_ADDRESS.toJson();
 			c.sendFromAccount(account, address, amount);
 			return ServletErrors.NO_ERROR.toJson();
 		} catch (Exception e) {
