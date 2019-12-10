@@ -146,5 +146,14 @@ public class DogecoinConnection {
 		return result.getBoolean("isvalid");
 	}
 	
+	public int getAccount(String address) throws Exception {
+		JSONArray arr = new JSONArray();
+		arr.put(address);
+		JSONObject out =  this.send("getaccount", arr);
+		int o = Integer.valueOf(out.getString("result"));
+		
+		return o;
+	}
+	
 	
 }

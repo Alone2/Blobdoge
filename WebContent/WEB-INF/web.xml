@@ -40,5 +40,10 @@
 		<servlet-name>sendM</servlet-name>
 		<servlet-class>ch.blobber.servlets.SendMyself</servlet-class>
 	</servlet>
+	
+	<servlet>
+		<servlet-name>sendUA</servlet-name>
+		<servlet-class>ch.blobber.servlets.SendURLAddressServlet</servlet-class>
+	</servlet>
 
 </web-app>
