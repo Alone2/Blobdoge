@@ -83,8 +83,13 @@ public class DogecoinConnection {
 	}
 	
 	public float getBalance(int account) throws Exception {
+		return getBalance(account, 1);
+	}
+	
+	public float getBalance(int account, int minconf) throws Exception {
 		JSONArray arr = new JSONArray();
 		arr.put(String.valueOf(account));
+		arr.put(minconf);
 		JSONObject out = this.send("getbalance", arr);
 
 		return out.getFloat("result");
@@ -121,19 +126,24 @@ public class DogecoinConnection {
 		return out.getString("result");
 	}
 	
-	/*public String getNewAddress(int account) throws Exception {
+	public String getNewAddress(int account) throws Exception {
+		// creates new address for account
 		JSONArray arr = new JSONArray();
 		arr.put(String.valueOf(account));
 		JSONObject out = this.send("getnewaddress", arr);
 		
 		return out.getString("result");
-	}*/
+	}
 	
 	public float getReceivedByAddress(String address) throws Exception {
+		return getReceivedByAddress(address, 1);
+	}
+	
+	public float getReceivedByAddress(String address, int minconf) throws Exception {
 		JSONArray arr = new JSONArray();
 		arr.put(address);
+		arr.put(minconf);
 		JSONObject out = this.send("getreceivedbyaddress", arr);
-		
 		return out.getFloat("result");
 	}
 	

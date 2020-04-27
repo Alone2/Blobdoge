@@ -45,5 +45,20 @@
 		<servlet-name>sendUA</servlet-name>
 		<servlet-class>ch.blobber.servlets.SendURLAddressServlet</servlet-class>
 	</servlet>
+	
+	<servlet>
+		<servlet-name>devIA</servlet-name>
+		<servlet-class>ch.blobber.servlets.DevInfoAddressServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>devNA</servlet-name>
+		<servlet-class>ch.blobber.servlets.DevNewAddressServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>devGDT</servlet-name>
+		<servlet-class>ch.blobber.servlets.DevGetDevTokenServlet</servlet-class>
+	</servlet>
 
 </web-app>

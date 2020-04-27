@@ -30,7 +30,22 @@ public class AuthDatabase extends Database {
 		return id;
 
 	}
+	
+	public int getUserIdFromDevToken(String token) throws SQLException {
+		// search userId with specific Token
+		String request = "SELECT id FROM authTable WHERE devToken= ? ;";
+		int id = 0;
+		PreparedStatement st = con.prepareStatement(request);
+		st.setString(1, token);
+		ResultSet rs = st.executeQuery();
+		while (rs.next()) {
+			id = rs.getInt("id");
+		}
+		rs.close();
+		return id;
 
+	}
+	
 	public String logIn(String username, String password) throws Exception {
 		// Get salt and password from Database
 		String request = "SELECT salt,password FROM authTable WHERE username=?;";
@@ -94,6 +109,55 @@ public class AuthDatabase extends Database {
 		return "{\"error\":\"none\"}";
 	}
 	
+	public String setNewDevToken(int userid) throws SQLException {
+		// Generate a token
+		int size = 50;
+		String output = randomLetters(size);
+		// Test if token already exists
+		String sql ="SELECT COUNT(uniqueId) FROM authTable WHERE devToken = ? ;";
+		PreparedStatement st;
+		st = con.prepareStatement(sql);
+		st.setString(1, output);
+		ResultSet rs = st.executeQuery();
+		int i = 0;
+		while (rs.next()) {
+			i = rs.getInt(1);
+		}
+		rs.close();
+		
+		if (i > 0)
+			return setNewDevToken(size);
+		
+		// save new Token
+		sql = "UPDATE authTable SET devToken = ? WHERE id= ? ;";
+		PreparedStatement st2;
+		st2 = con.prepareStatement(sql);
+		st2.setString(1, output);
+		st2.setInt(2, userid);
+		st2.execute();
+		st2.close();
+		
+		return "{\"error\":\"none\"}";
+	}
+	
+	public String getDevToken(int userid) throws SQLException {
+		String devtoken = "";
+		String request = "SELECT devToken FROM authTable WHERE id=?;";
+		PreparedStatement st = con.prepareStatement(request);
+		st.setInt(1, userid);
+		ResultSet rs = st.executeQuery();
+		while (rs.next()) {
+			devtoken = rs.getString("devToken");
+		}
+		rs.close();
+		// generate new dev token if not here
+		if (devtoken == null || devtoken == "") {
+			setNewDevToken(userid);
+			return getDevToken(userid);
+		}
+		return devtoken;
+	}
+	
 	private boolean doesUserExist(String username) throws SQLException {
 		String sql = "SELECT COUNT(username) FROM authTable WHERE username = ? ;";
 		PreparedStatement st;
@@ -153,6 +217,8 @@ public class AuthDatabase extends Database {
 			return generateToken(size);
 		return output;
 	}
+	
+
 	
 
 }
