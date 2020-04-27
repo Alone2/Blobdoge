@@ -32,6 +32,7 @@ public class WalletDatabase extends Database {
 		
 		return url;
 	}
+	
 
 	public float getURLBalance(String url) throws SQLException {
 		String request = "SELECT balance FROM walletTable WHERE url=? AND isDone = 0;";

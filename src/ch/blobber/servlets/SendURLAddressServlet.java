@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 
 import ch.blobber.database.AuthDatabase;
+import ch.blobber.database.PaymentDatabase;
 import ch.blobber.wallet.DogecoinConnection;
 
 @WebServlet("/sendURLAddress")
@@ -54,12 +55,21 @@ public class SendURLAddressServlet extends HttpServlet {
 		    if(!c.validateAddress(address))
 		    	return ServletErrors.INVALID_ADDRESS.toJson();
 		    try {
+		    	// if blobber account, then direct move
 		    	int accReceiver = c.getAccount(address);
 		    	if (accReceiver != 0) {
 		    		c.move(account, accReceiver, amount);
 		    	} else {
 		    		throw new Exception();
 		    	}
+		    	// save in database
+		    	try {
+		    		PaymentDatabase p = new PaymentDatabase();
+		    		p.setPaymentBalance(address, p.getPaymentBalance(address) + amount);
+		    		p.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 		    } catch (Exception e) {
 		    	c.sendFromAccount(account, address, amount);
 			}
