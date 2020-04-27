@@ -30,22 +30,24 @@ public class InfoAddressServlet extends HttpServlet {
 		
 		AuthDatabase db = new AuthDatabase();
 		int user;
+		String devtoken;
 		try {
 			user = db.getUserId(token);
-			db.close();
 			if (user == 0) {
 				 out.print(ServletErrors.WRONG_KEY.toJson());
 				 return;
 			}
+			devtoken = db.getDevToken(user);
+			db.close();
 		} catch (SQLException e) {
 			 out.print(ServletErrors.INTERNAL_ERROR.toJson());
 			 return;
 		}
 		
-		out.print(this.getInfo(user));
+		out.print(this.getInfo(user, devtoken));
 	}
 	
-	private String getInfo(int account) {
+	private String getInfo(int account, String devtoken) {
 		DogecoinConnection c = new DogecoinConnection();
 		String address;
 		float balance;
@@ -72,6 +74,7 @@ public class InfoAddressServlet extends HttpServlet {
 		j.put("address", address);
 		j.put("balance", balance);
 		j.put("codes", codes);
+		j.put("devtoken", devtoken);
 		return j.toString();
 	}
 }
